@@ -56,7 +56,7 @@ def show_images(images):
     st.pyplot(fig)
 
 # ✅ Streamlit UI
-st.title("🧠 Handwritten Digit Generator (0–9) - Improved DCGAN")
+st.title("Handwritten Digit Generator (0–9)")
 st.write("Select a digit and generate 5 clean synthetic handwritten digit images using a cDCGAN model.")
 
 selected_digit = st.selectbox("Choose a digit (0–9)", list(range(10)))
