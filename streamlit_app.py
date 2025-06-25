@@ -1,17 +1,16 @@
 import streamlit as st
 import torch
 import torch.nn as nn
-import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 import numpy as np
 
 device = torch.device('cpu')
 
-# ✅ New cDCGAN Generator architecture
+# ✅ Corrected cDCGAN Generator Class (Matches Your Colab Training)
 class Generator(nn.Module):
     def __init__(self, latent_dim=100):
         super(Generator, self).__init__()
-        self.label_emb = nn.Embedding(10, 10)  # Embedding for digit labels (0-9)
+        self.label_embed = nn.Embedding(10, 10)  # Must match Colab model definition!
 
         self.model = nn.Sequential(
             nn.ConvTranspose2d(latent_dim + 10, 128, 7, 1, 0, bias=False),
@@ -27,11 +26,11 @@ class Generator(nn.Module):
         )
 
     def forward(self, z, labels):
-        label_embed = self.label_emb(labels)
+        label_embed = self.label_embed(labels)
         x = torch.cat([z, label_embed], dim=1).unsqueeze(2).unsqueeze(3)
         return self.model(x)
 
-# ✅ Streamlit cache for loading model
+# ✅ Streamlit Cached Model Loader
 @st.cache_resource
 def load_generator():
     model = Generator().to(device)
@@ -39,7 +38,7 @@ def load_generator():
     model.eval()
     return model
 
-# ✅ Generate images
+# ✅ Generate Images
 def generate_images(model, digit, count=5):
     z = torch.randn(count, 100).to(device)
     labels = torch.full((count,), digit, dtype=torch.long).to(device)
@@ -47,17 +46,18 @@ def generate_images(model, digit, count=5):
         images = model(z, labels).cpu()
     return images
 
-# ✅ Display images
+# ✅ Display Images
 def show_images(images):
     fig, axs = plt.subplots(1, len(images), figsize=(10, 2))
     for i, img in enumerate(images):
-        axs[i].imshow(img.squeeze(0), cmap='gray')
+        img_np = img.squeeze().numpy()
+        axs[i].imshow(img_np, cmap='gray')
         axs[i].axis('off')
     st.pyplot(fig)
 
 # ✅ Streamlit UI
-st.title("🧠 Handwritten Digit Generator (0–9) - DCGAN Version")
-st.write("Select a digit and generate 5 synthetic handwritten digit images using a cDCGAN model.")
+st.title("🧠 Handwritten Digit Generator (0–9) - Improved DCGAN")
+st.write("Select a digit and generate 5 clean synthetic handwritten digit images using a cDCGAN model.")
 
 selected_digit = st.selectbox("Choose a digit (0–9)", list(range(10)))
 
